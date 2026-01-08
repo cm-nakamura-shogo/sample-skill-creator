@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "sample-skill-creator",
+  "description": "Sample plugins and skills for Claude Code",
+  "owner": {
+    "name": "nakamura.shogo",
+    "email": "nakamura.shogo@classmethod.jp"
+  },
+  "plugins": [
+    {
+      "name": "profile-photo-processor",
+      "source": "./plugins/profile-photo-processor",
+      "description": "プロフィール写真の標準化処理（背景除去、顔センタリング、明るさ補正）",
+      "version": "0.1.0",
+      "author": {
+        "name": "nakamura.shogo",
+        "email": "nakamura.shogo@classmethod.jp"
+      },
+      "category": "image-processing"
+    }
+  ]
+}
