@@ -1,0 +1,9 @@
+{
+  "name": "profile-photo-processor",
+  "version": "0.1.0",
+  "description": "プロフィール写真の標準化処理（背景除去、顔センタリング、明るさ補正）",
+  "author": {
+    "name": "nakamura.shogo",
+    "email": "nakamura.shogo@classmethod.jp"
+  }
+}
