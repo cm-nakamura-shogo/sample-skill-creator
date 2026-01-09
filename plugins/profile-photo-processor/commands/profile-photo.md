@@ -3,37 +3,43 @@ allowed-tools: Bash, Read, Write
 description: プロフィール写真を処理する（背景除去、顔センタリング、明るさ補正）
 ---
 
-## Context
+## このコマンドについて
 
-- Plugin root: `$CLAUDE_PLUGIN_ROOT`
-- Scripts location: `$CLAUDE_PLUGIN_ROOT/skills/profile-photo-processor/scripts`
+プロフィール写真の標準化処理を行う。背景除去、顔センタリング、明るさ補正を自動で実行する。
 
-## Your task
+## 処理の流れ
 
-ユーザーが指定した画像ファイルに対して、プロフィール写真の標準化処理を実行する。
+1. ユーザーに入力画像パスと出力画像パスを確認
+2. スクリプトの場所を特定
+3. uvxでスクリプトを実行
 
-### 処理内容
+## スクリプトの場所
 
-1. 背景を除去して #e1e1e1 に置換
-2. 顔を検出して画像の中央に配置
-3. 暗い画像は明るさを自動補正
-4. JPEG形式で出力
+このプラグインのスクリプトは以下にある：
+`${CLAUDE_PLUGIN_ROOT}/skills/profile-photo-processor/scripts/`
 
-### 実行方法
+もし `${CLAUDE_PLUGIN_ROOT}` が解決できない場合は、以下のパスを探す：
+- `~/.claude/plugins/marketplaces/*/plugins/profile-photo-processor/skills/profile-photo-processor/scripts/`
+
+## 実行コマンド
 
 ```bash
-cd $CLAUDE_PLUGIN_ROOT/skills/profile-photo-processor/scripts
+cd <スクリプトのディレクトリ>
 uvx --python 3.12 --from . profile-photo-processor <入力画像> <出力画像>
 ```
 
-### オプション
+## オプション
 
-- `--bg-color`: 背景色（hex, デフォルト: e1e1e1）
-- `--face-ratio`: 顔サイズ比率（デフォルト: 0.18）
-- `--face-position`: 顔の垂直位置（デフォルト: 0.42）
-- `--model`: 背景除去モデル（デフォルト: isnet-general-use）
+| オプション | デフォルト | 説明 |
+|-----------|-----------|------|
+| `--size` | 1000 | 出力画像の最大サイズ（px） |
+| `--bg-color` | e1e1e1 | 背景色（hex） |
+| `--face-ratio` | 0.18 | 顔の高さが画像高さに占める割合 |
+| `--face-position` | 0.42 | 顔の垂直位置（0=上端, 1=下端） |
+| `--model` | isnet-general-use | 背景除去モデル |
+| `--no-normalize` | - | 明るさ補正をスキップ |
 
-### 前提条件
+## 前提条件
 
 uvがインストールされていること。未インストールの場合：
 
@@ -47,4 +53,8 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-ユーザーに入力画像と出力先を確認してから処理を実行すること。
+## 手順
+
+1. まずユーザーに入力画像と出力先を確認する
+2. スクリプトのディレクトリに移動してuvxで実行する
+3. 処理結果をユーザーに報告する
