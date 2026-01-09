@@ -1,0 +1,9 @@
+services:
+  profile-photo-processor:
+    build: .
+    volumes:
+      - ./input:/input:ro
+      - ./output:/output
+    # Example usage:
+    # docker compose run --rm profile-photo-processor /input /output
+    # docker compose run --rm profile-photo-processor /input/photo.jpg /output/result.jpg

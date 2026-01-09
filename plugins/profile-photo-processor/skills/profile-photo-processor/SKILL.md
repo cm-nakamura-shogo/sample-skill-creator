@@ -1,54 +1,55 @@
 ---
 name: profile-photo-processor
-description: プロフィール写真の標準化処理。人物写真から背景を除去し、指定色（デフォルト#e1e1e1）に置換、顔検出による自動センタリング、明るさ補正を行う。プロフィール写真の作成、社員証写真の統一、SNSアイコン用画像の加工などに使用。
+description: |
+  プロフィール写真の標準化処理。
+  背景除去、顔センタリング、明るさ補正を自動で行う。
+  Dockerで実行するため安全。
 ---
 
 # Profile Photo Processor
 
-プロフィール写真を標準化するスキル。背景除去、顔検出によるセンタリング、明るさ補正を自動で行う。
+プロフィール写真を標準化するスキル。Docker経由で安全に実行。
 
-## セットアップ
+## 機能
 
-uvをインストール（未インストールの場合）：
-
-**macOS/Linux:**
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-**Windows (PowerShell):**
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-または winget:
-```
-winget install --id=astral-sh.uv -e
-```
+- 背景を除去して指定色（デフォルト #e1e1e1）に置換
+- 顔を検出して画像の中央に配置
+- 暗い画像は明るさを自動補正
+- 単一ファイルまたはフォルダ一括処理に対応
 
 ## 使用方法
 
-### uvxで実行（推奨）
+### Docker Compose（推奨）
 
 ```bash
-cd scripts
-uvx --python 3.12 --from . profile-photo-processor <入力画像> <出力画像>
+cd ${CLAUDE_PLUGIN_ROOT}/skills/profile-photo-processor
+
+# イメージをビルド（初回のみ）
+docker compose build
+
+# フォルダ一括処理
+docker compose run --rm profile-photo-processor /input /output
+
+# 単一ファイル処理
+docker compose run --rm profile-photo-processor /input/photo.jpg /output/result.jpg
 ```
 
-### 例
+### Docker直接実行
 
 ```bash
-# 基本的な処理
-uvx --python 3.12 --from . profile-photo-processor photo.jpg output.jpg
+cd ${CLAUDE_PLUGIN_ROOT}/skills/profile-photo-processor
 
-# カスタム背景色（白）
-uvx --python 3.12 --from . profile-photo-processor photo.jpg output.jpg --bg-color ffffff
+# イメージをビルド
+docker build -t profile-photo-processor .
 
-# 顔サイズと位置の調整
-uvx --python 3.12 --from . profile-photo-processor photo.jpg output.jpg --face-ratio 0.20 --face-position 0.40
+# 実行（ホストのフォルダをマウント）
+docker run --rm \
+  -v /path/to/input:/input:ro \
+  -v /path/to/output:/output \
+  profile-photo-processor /input /output
 ```
 
-### オプション
+## オプション
 
 | オプション | デフォルト | 説明 |
 |-----------|-----------|------|
@@ -59,18 +60,24 @@ uvx --python 3.12 --from . profile-photo-processor photo.jpg output.jpg --face-r
 | `--model` | isnet-general-use | 背景除去モデル |
 | `--no-normalize` | - | 明るさ補正をスキップ |
 
-### 背景除去モデル
+## 前提条件
 
-- `isnet-general-use`: 高品質（推奨）
-- `u2net`: 標準
-- `u2net_human_seg`: 人物特化
-- `u2netp`: 軽量版
+- Docker Desktop または Docker Engine がインストールされていること
 
-## 処理内容
+> **Dockerが使えない場合**
+> Rancher Desktop などをインストールし、**起動しておいてください**（起動していないと docker コマンドが使えません）。
+> - macOS/Windows: https://rancherdesktop.io/
+> - Linux: Docker Engine をインストール・起動
 
-1. **顔検出**: OpenCV Haar Cascadeで顔を検出
-2. **背景除去**: rembgで人物を切り出し
-3. **エッジ処理**: モルフォロジー処理でエッジをシャープに
-4. **配置計算**: 顔が中央に来るようスケール・位置を調整
-5. **明るさ補正**: 暗い画像のみ自動補正（明るい画像はそのまま）
-6. **出力**: JPEG形式で保存
+## ファイル構成
+
+```
+skills/profile-photo-processor/
+├── SKILL.md
+├── Dockerfile
+├── docker-compose.yml
+└── scripts/
+    ├── process_profile_photo.py
+    ├── pyproject.toml
+    └── uv.lock
+```

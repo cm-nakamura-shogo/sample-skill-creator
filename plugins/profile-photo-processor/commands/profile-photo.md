@@ -1,31 +1,57 @@
 ---
-allowed-tools: Bash, Read, Write
-description: プロフィール写真を処理する（背景除去、顔センタリング、明るさ補正）
+allowed-tools: Bash, Read, Write, Glob
+description: プロフィール写真を処理する（背景除去、顔センタリング、明るさ補正）- Docker使用
 ---
 
-## このコマンドについて
+# Profile Photo Processor
 
-プロフィール写真の標準化処理を行う。背景除去、顔センタリング、明るさ補正を自動で実行する。
+プロフィール写真の標準化処理を行う。Docker経由で安全に実行。
 
 ## 処理の流れ
 
-1. ユーザーに入力画像パスと出力画像パスを確認
-2. スクリプトの場所を特定
-3. uvxでスクリプトを実行
+1. ユーザーに入力（ファイルまたはフォルダ）と出力先を確認
+2. スキルのディレクトリを特定
+3. Dockerイメージをビルド（必要に応じて）
+4. Dockerでスクリプトを実行
 
-## スクリプトの場所
+## スキルの場所
 
-このプラグインのスクリプトは以下にある：
-`${CLAUDE_PLUGIN_ROOT}/skills/profile-photo-processor/scripts/`
+このプラグインのスキルは以下にある：
+- `${CLAUDE_PLUGIN_ROOT}/skills/profile-photo-processor/`
 
 もし `${CLAUDE_PLUGIN_ROOT}` が解決できない場合は、以下のパスを探す：
-- `~/.claude/plugins/marketplaces/*/plugins/profile-photo-processor/skills/profile-photo-processor/scripts/`
+- `~/.claude/plugins/marketplaces/*/plugins/profile-photo-processor/skills/profile-photo-processor/`
 
-## 実行コマンド
+## 実行手順
+
+### 1. スキルディレクトリに移動
 
 ```bash
-cd <スクリプトのディレクトリ>
-uvx --python 3.12 --from . profile-photo-processor <入力画像> <出力画像>
+cd <スキルのディレクトリ>
+```
+
+### 2. Dockerイメージをビルド（初回のみ）
+
+```bash
+docker compose build
+```
+
+### 3. 処理を実行
+
+**フォルダ一括処理の場合：**
+```bash
+docker compose run --rm \
+  -v /absolute/path/to/input:/input:ro \
+  -v /absolute/path/to/output:/output \
+  profile-photo-processor /input /output
+```
+
+**単一ファイル処理の場合：**
+```bash
+docker compose run --rm \
+  -v /absolute/path/to/input:/input:ro \
+  -v /absolute/path/to/output:/output \
+  profile-photo-processor /input/filename.jpg /output/result.jpg
 ```
 
 ## オプション
@@ -41,20 +67,15 @@ uvx --python 3.12 --from . profile-photo-processor <入力画像> <出力画像>
 
 ## 前提条件
 
-uvがインストールされていること。未インストールの場合：
+- Docker Desktop または Docker Engine がインストールされていること
 
-**macOS/Linux:**
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+> **Dockerが使えない場合**
+> ユーザーに「Rancher Desktop などをインストールし、**起動しておいてください**（起動していないと docker コマンドが使えません）」と案内する。
+> - macOS/Windows: https://rancherdesktop.io/
+> - Linux: Docker Engine をインストール・起動
 
-**Windows:**
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
+## 注意事項
 
-## 手順
-
-1. まずユーザーに入力画像と出力先を確認する
-2. スクリプトのディレクトリに移動してuvxで実行する
-3. 処理結果をユーザーに報告する
+- 入力・出力パスは絶対パスで指定する
+- 入力フォルダは読み取り専用（:ro）でマウントされる
+- 対応フォーマット: jpg, jpeg, png, webp, bmp
